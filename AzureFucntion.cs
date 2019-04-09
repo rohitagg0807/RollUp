@@ -419,7 +419,7 @@ public static Object[] ValidateandPatch(dynamic jObject, string pathTotWork, str
             {
                 patchDocument[0] = new { op = "add", path = pathComWork, value = fieldTotWork };
                 patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldTotWork };
-                patchDocument[2] = new { op = "add", path = pathRemWork, value = "0" };
+                patchDocument[2] = new { op = "add", path = pathRemWork, value = "" };
                 return patchDocument;
             }
             else
@@ -450,7 +450,7 @@ public static Object[] ValidateandPatch(dynamic jObject, string pathTotWork, str
                 Object[] patchDocument = new Object[3];
                 patchDocument[0] = new { op = "add", path = pathComWork, value = fieldTotWork };
                 patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldTotWork };
-                patchDocument[2] = new { op = "add", path = pathRemWork, value = "0" };
+                patchDocument[2] = new { op = "add", path = pathRemWork, value = "" };
                 return patchDocument;
             }
             else
@@ -503,7 +503,7 @@ public static Object[] ValidateandPatch(dynamic jObject, string pathTotWork, str
             {
                 patchDocument[0] = new { op = "add", path = pathComWork, value = fieldTotWork };
                 patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldTotWork };
-                patchDocument[2] = new { op = "add", path = pathRemWork, value = "0" };
+                patchDocument[2] = new { op = "add", path = pathRemWork, value = "" };
                 return patchDocument;
             }
             else
@@ -534,7 +534,7 @@ public static Object[] ValidateandPatch(dynamic jObject, string pathTotWork, str
                 Object[] patchDocument = new Object[2];
                 patchDocument[0] = new { op = "add", path = pathComWork, value = fieldTotWork };
                 patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldTotWork };
-                patchDocument[2] = new { op = "add", path = pathRemWork, value = "0" };
+                patchDocument[2] = new { op = "add", path = pathRemWork, value = "" };
                 return patchDocument;
             }
             else
@@ -596,7 +596,7 @@ public static string ChildInfURL(string URL,List<string> ChildIds, string jsonTo
         }
     }
 
-    string EndURL = "&fields=" + jsonRemWork + "," + jsonTotWork + "," + jsonComWork + "&api-version=5.0";
+    string EndURL = "&fields=System.State," + jsonRemWork + "," + jsonTotWork + "," + jsonComWork + "&api-version=5.0";
 
     return startURL + EndURL;
 
@@ -617,7 +617,11 @@ public static Object[] getChildValuesandPatch(dynamic WorkItemCS, string pathTot
     foreach (dynamic childvalue in childvalueObject)
     {
         dynamic childs = JsonConvert.DeserializeObject(childvalue.ToString());
-        if (childs["fields"][jsonRemWork] == null && childs["fields"][jsonTotWork] == null && childs["fields"][jsonComWork] == null)
+        if (childs["fields"]["System.State"] == "Removed")
+        {
+            
+        }
+        else if (childs["fields"][jsonRemWork] == null && childs["fields"][jsonTotWork] == null && childs["fields"][jsonComWork] == null)
         {
 
         }
