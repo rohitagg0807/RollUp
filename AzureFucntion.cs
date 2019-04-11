@@ -421,7 +421,7 @@ public static Object[] ValidateandPatch(dynamic jObject, string pathTotWork, str
 {
     if ((jObject["eventType"]).ToString() == "workitem.created")
     {
-        if (jObject["resource"]["fields"][jsonRemWork] == null && jObject["resource"]["fields"][jsonTotWork] != null && jObject["resource"]["fields"][jsonComWork] != null)
+        if (jObject["resource"]["fields"][jsonRemWork] == null && jObject["resource"]["fields"][jsonTotWork] != null)
         {
 
             string fieldTotWork = (jObject["resource"]["fields"][jsonTotWork]).ToString("0.##");
@@ -437,66 +437,59 @@ public static Object[] ValidateandPatch(dynamic jObject, string pathTotWork, str
             else
             {
                 Object[] patchDocument = new Object[3];
-                decimal fieldRemWork = decimal.Parse(fieldTotWork) - decimal.Parse(fieldComWork);
-                patchDocument[0] = new { op = "add", path = pathRemWork, value = fieldRemWork.ToString("0.##") };
-                patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldTotWork };
-                patchDocument[2] = new { op = "add", path = pathComWork, value = fieldComWork };
-                return patchDocument;
-            }
-        }
-       else if (jObject["resource"]["fields"][jsonRemWork] == null && jObject["resource"]["fields"][jsonTotWork] != null && jObject["resource"]["fields"][jsonComWork] == null)
-        {
-            Object[] patchDocument = new Object[3];
-            string fieldTotWork = (jObject["resource"]["fields"][jsonTotWork]).ToString("0.##");
-            if (jObject["resource"]["fields"]["System.State"] != null && (jObject["resource"]["fields"]["System.State"]).ToString() == "Done")
-            {
-                patchDocument[0] = new { op = "add", path = pathComWork, value = fieldTotWork };
-                patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldTotWork };
-                patchDocument[2] = new { op = "add", path = pathRemWork, value = "" };
-                return patchDocument;
-            }
-            else
-            {
+                //decimal fieldRemWork = decimal.Parse(fieldTotWork) - decimal.Parse(fieldComWork);
                 patchDocument[0] = new { op = "add", path = pathRemWork, value = fieldTotWork };
                 patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldTotWork };
                 patchDocument[2] = new { op = "add", path = pathComWork, value = "0" };
                 return patchDocument;
             }
         }
-
-        else if (jObject["resource"]["fields"][jsonRemWork] != null && jObject["resource"]["fields"][jsonTotWork] == null && jObject["resource"]["fields"][jsonComWork] != null)
+        else if (jObject["resource"]["fields"][jsonRemWork] != null && jObject["resource"]["fields"][jsonTotWork] == null)
         {
             Object[] patchDocument = new Object[3];
             string fieldRemWork = (jObject["resource"]["fields"][jsonRemWork]).ToString("0.##");
-            string fieldComWork = (jObject["resource"]["fields"][jsonComWork]).ToString("0.##");
-            decimal fieldTotWork = decimal.Parse(fieldComWork) + decimal.Parse(fieldRemWork);
-            patchDocument[0] = new { op = "add", path = pathTotWork, value = fieldTotWork.ToString("0.##") };
+            //string fieldComWork = (jObject["resource"]["fields"][jsonComWork]).ToString("0.##");
+            //decimal fieldTotWork = decimal.Parse(fieldComWork) + decimal.Parse(fieldRemWork);
+            patchDocument[0] = new { op = "add", path = pathTotWork, value = fieldRemWork };
             patchDocument[1] = new { op = "add", path = pathRemWork, value = fieldRemWork };
-            patchDocument[2] = new { op = "add", path = pathComWork, value = fieldComWork };
-            return patchDocument;
-        }
-
-        else if (jObject["resource"]["fields"][jsonRemWork] != null && jObject["resource"]["fields"][jsonTotWork] == null && jObject["resource"]["fields"][jsonComWork] == null)
-        {
-            Object[] patchDocument = new Object[3];
-            string fieldTotWork = (jObject["resource"]["fields"][jsonRemWork]).ToString("0.##");
-            patchDocument[0] = new { op = "add", path = pathTotWork, value = fieldTotWork };
-            patchDocument[1] = new { op = "add", path = pathRemWork, value = fieldTotWork };
             patchDocument[2] = new { op = "add", path = pathComWork, value = "0" };
             return patchDocument;
         }
-
-
 
         else if (jObject["resource"]["fields"][jsonRemWork] != null && jObject["resource"]["fields"][jsonTotWork] != null)
         {
             Object[] patchDocument = new Object[3];
             string fieldTotWork = (jObject["resource"]["fields"][jsonTotWork]).ToString("0.##");
             string fieldRemWork = (jObject["resource"]["fields"][jsonRemWork]).ToString("0.##");
+            if (jObject["resource"]["fields"]["System.State"] != null && (jObject["resource"]["fields"]["System.State"]).ToString() == "Done")
+            {
+                patchDocument[0] = new { op = "add", path = pathComWork, value = fieldTotWork };
+                patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldTotWork };
+                patchDocument[2] = new { op = "add", path = pathRemWork, value = "" };
+                return patchDocument;
+            }
+            else
+            {
+            if (Decimal.Compare(decimal.Parse(fieldTotWork), decimal.Parse(fieldRemWork)) >= 0) //Checking if remaining is greater than total
+            {
             decimal fieldComWork = decimal.Parse(fieldTotWork) - decimal.Parse(fieldRemWork);
             patchDocument[0] = new { op = "add", path = pathComWork, value = fieldComWork.ToString("0.##") };
             patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldTotWork };
             patchDocument[2] = new { op = "add", path = pathRemWork, value = fieldRemWork };
+            }
+            else
+            {
+            patchDocument[0] = new { op = "add", path = pathComWork, value = "0" };
+            patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldRemWork };
+            patchDocument[2] = new { op = "add", path = pathRemWork, value = fieldRemWork };
+            }
+            }
+            return patchDocument;
+        }
+        else if (jObject["resource"]["fields"][jsonRemWork] == null && jObject["resource"]["fields"][jsonTotWork] == null && jObject["resource"]["fields"][jsonComWork] != null )
+        {
+            Object[] patchDocument = new Object[1];
+            patchDocument[0] = new { op = "add", path = pathComWork, value = "" };
             return patchDocument;
         }
         else
@@ -507,10 +500,10 @@ public static Object[] ValidateandPatch(dynamic jObject, string pathTotWork, str
     }
     else
     {
-        if (jObject["resource"]["revision"]["fields"][jsonRemWork] == null && jObject["resource"]["revision"]["fields"][jsonTotWork] != null && jObject["resource"]["revision"]["fields"][jsonComWork] != null)
+        if (jObject["resource"]["revision"]["fields"][jsonRemWork] == null && jObject["resource"]["revision"]["fields"][jsonTotWork] != null)
         {
             string fieldTotWork = (jObject["resource"]["revision"]["fields"][jsonTotWork]).ToString("0.##");
-            string fieldComWork = (jObject["resource"]["revision"]["fields"][jsonComWork]).ToString("0.##");
+           // string fieldComWork = (jObject["resource"]["revision"]["fields"][jsonComWork]).ToString("0.##");
             if (jObject["resource"]["revision"]["fields"]["System.State"] != null && (jObject["resource"]["revision"]["fields"]["System.State"]).ToString() == "Done")
             {
                 Object[] patchDocument = new Object[3];
@@ -522,26 +515,7 @@ public static Object[] ValidateandPatch(dynamic jObject, string pathTotWork, str
             else
             {
                 Object[] patchDocument = new Object[3];
-                decimal fieldRemWork = decimal.Parse(fieldTotWork) - decimal.Parse(fieldComWork);
-                patchDocument[0] = new { op = "add", path = pathRemWork, value = fieldRemWork.ToString("0.##") };
-                patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldTotWork };
-                patchDocument[2] = new { op = "add", path = pathComWork, value = fieldComWork };
-                return patchDocument;
-            }
-        }
-        else if (jObject["resource"]["revision"]["fields"][jsonRemWork] == null && jObject["resource"]["revision"]["fields"][jsonTotWork] != null && jObject["resource"]["revision"]["fields"][jsonComWork] == null)
-        {
-            Object[] patchDocument = new Object[3];
-            string fieldTotWork = (jObject["resource"]["revision"]["fields"][jsonTotWork]).ToString("0.##");
-            if (jObject["resource"]["revision"]["fields"]["System.State"] != null && (jObject["resource"]["revision"]["fields"]["System.State"]).ToString() == "Done")
-            {
-                patchDocument[0] = new { op = "add", path = pathComWork, value = fieldTotWork };
-                patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldTotWork };
-                patchDocument[2] = new { op = "add", path = pathRemWork, value = "" };
-                return patchDocument;
-            }
-            else
-            {
+               // decimal fieldRemWork = decimal.Parse(fieldTotWork) - decimal.Parse(fieldComWork);
                 patchDocument[0] = new { op = "add", path = pathRemWork, value = fieldTotWork };
                 patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldTotWork };
                 patchDocument[2] = new { op = "add", path = pathComWork, value = "0" };
@@ -549,37 +523,53 @@ public static Object[] ValidateandPatch(dynamic jObject, string pathTotWork, str
             }
         }
 
-        else if (jObject["resource"]["revision"]["fields"][jsonRemWork] != null && jObject["resource"]["revision"]["fields"][jsonTotWork] == null && jObject["resource"]["revision"]["fields"][jsonComWork] != null)
+        else if (jObject["resource"]["revision"]["fields"][jsonRemWork] != null && jObject["resource"]["revision"]["fields"][jsonTotWork] == null)
         {
             Object[] patchDocument = new Object[3];
             string fieldRemWork = (jObject["resource"]["revision"]["fields"][jsonRemWork]).ToString("0.##");
-            string fieldComWork = (jObject["resource"]["revision"]["fields"][jsonComWork]).ToString("0.##");
-            decimal fieldTotWork = decimal.Parse(fieldComWork) + decimal.Parse(fieldRemWork);
-            patchDocument[0] = new { op = "add", path = pathTotWork, value = fieldTotWork.ToString("0.##") };
+            //string fieldComWork = (jObject["resource"]["revision"]["fields"][jsonComWork]).ToString("0.##");
+            //decimal fieldTotWork = decimal.Parse(fieldComWork) + decimal.Parse(fieldRemWork);
+            patchDocument[0] = new { op = "add", path = pathTotWork, value = fieldRemWork };
             patchDocument[1] = new { op = "add", path = pathRemWork, value = fieldRemWork };
-            patchDocument[2] = new { op = "add", path = pathComWork, value = fieldComWork };
-            return patchDocument;
-        }
-
-        else if (jObject["resource"]["revision"]["fields"][jsonRemWork] != null && jObject["resource"]["revision"]["fields"][jsonTotWork] == null && jObject["resource"]["revision"]["fields"][jsonComWork] == null)
-        {
-            Object[] patchDocument = new Object[3];
-            string fieldTotWork = (jObject["resource"]["revision"]["fields"][jsonRemWork]).ToString("0.##");
-            patchDocument[0] = new { op = "add", path = pathTotWork, value = fieldTotWork };
-            patchDocument[1] = new { op = "add", path = pathRemWork, value = fieldTotWork };
             patchDocument[2] = new { op = "add", path = pathComWork, value = "0" };
             return patchDocument;
         }
+
 
         else if (jObject["resource"]["revision"]["fields"][jsonRemWork] != null && jObject["resource"]["revision"]["fields"][jsonTotWork] != null)
         {
             Object[] patchDocument = new Object[3];
             string fieldTotWork = (jObject["resource"]["revision"]["fields"][jsonTotWork]).ToString("0.##");
             string fieldRemWork = (jObject["resource"]["revision"]["fields"][jsonRemWork]).ToString("0.##");
+            if (jObject["resource"]["revision"]["fields"]["System.State"] != null && (jObject["resource"]["revision"]["fields"]["System.State"]).ToString() == "Done")
+            {
+                patchDocument[0] = new { op = "add", path = pathComWork, value = fieldTotWork };
+                patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldTotWork };
+                patchDocument[2] = new { op = "add", path = pathRemWork, value = "" };
+                return patchDocument;
+            }
+            else
+            {
+            if (Decimal.Compare(decimal.Parse(fieldTotWork), decimal.Parse(fieldRemWork)) >= 0)
+            {
             decimal fieldComWork = decimal.Parse(fieldTotWork) - decimal.Parse(fieldRemWork);
             patchDocument[0] = new { op = "add", path = pathComWork, value = fieldComWork.ToString("0.##") };
             patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldTotWork };
             patchDocument[2] = new { op = "add", path = pathRemWork, value = fieldRemWork };
+            }
+            else
+            {
+            patchDocument[0] = new { op = "add", path = pathComWork, value = "0" };
+            patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldRemWork };
+            patchDocument[2] = new { op = "add", path = pathRemWork, value = fieldRemWork };
+            }
+            }
+            return patchDocument;
+        }
+         else if (jObject["resource"]["revision"]["fields"][jsonRemWork] == null && jObject["resource"]["revision"]["fields"][jsonTotWork] == null && jObject["resource"]["revision"]["fields"][jsonComWork] != null )
+        {
+            Object[] patchDocument = new Object[1];
+            patchDocument[0] = new { op = "add", path = pathComWork, value = "" };
             return patchDocument;
         }
         else
@@ -774,7 +764,7 @@ public static Object[] getChildValuesandPatch(dynamic WorkItemCS, string pathTot
         if (string.Equals(fieldRemWork, ""))
         {
             Object[] patchDocument = new Object[3];
-            patchDocument[0] = new { op = "add", path = pathRemWork, value = CompWork.ToString("0.##") };
+            patchDocument[0] = new { op = "add", path = pathRemWork, value = Remwork.ToString("0.##") };
             patchDocument[1] = new { op = "add", path = pathTotWork, value = "" };
             patchDocument[2] = new { op = "add", path = pathComWork, value = "" };
 
@@ -784,7 +774,7 @@ public static Object[] getChildValuesandPatch(dynamic WorkItemCS, string pathTot
         else if (decimal.Parse(fieldRemWork) != Remwork)
         {
             Object[] patchDocument = new Object[3];
-            patchDocument[0] = new { op = "add", path = pathRemWork, value = CompWork.ToString("0.##") };
+            patchDocument[0] = new { op = "add", path = pathRemWork, value = Remwork.ToString("0.##") };
             patchDocument[1] = new { op = "add", path = pathTotWork, value = "" };
             patchDocument[2] = new { op = "add", path = pathComWork, value = "" };
 
