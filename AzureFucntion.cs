@@ -194,7 +194,7 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
                     HttpResponseMessage childrenvalues = client.GetAsync(childURL).Result;
                     childrenvalues.EnsureSuccessStatusCode();
                     dynamic WorkItemCS = await childrenvalues.Content.ReadAsAsync<object>();
-                    // log.Info(WorkItemCS.ToString());                  
+                    log.Info(WorkItemCS.ToString());                  
                     var patchDocumentParent = getChildValuesandPatch(WorkItemCS, pathTotWork, pathRemWork, pathComWork, jsonTotWork, jsonRemWork, jsonComWork, fieldTotWork, fieldComWork, fieldRemWork );
                     if (patchDocumentParent != null)
                     {
@@ -278,7 +278,7 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
              
             childrenvalues.EnsureSuccessStatusCode();
             dynamic WorkItemCS = await childrenvalues.Content.ReadAsAsync<object>();
-            //log.Info(WorkItemCS.ToString()); 
+            log.Info(WorkItemCS.ToString()); 
             log.Info(fieldRemWork.ToString());                    
             var patchDocumentParent = getChildValuesandPatch(WorkItemCS, pathTotWork, pathRemWork, pathComWork, jsonTotWork, jsonRemWork, jsonComWork, fieldTotWork, fieldComWork, fieldRemWork );
             log.Info("I am here");
@@ -687,7 +687,7 @@ public static Object[] getChildValuesandPatch(dynamic WorkItemCS, string pathTot
     }
     if (TotalWork.Count == 0 && RemainingWork.Count != 0 && CompletedWork.Count != 0)
     {
-        if (string.Equals(fieldComWork, "") || string.Equals(fieldRemWork, ""))
+        if (string.Equals(fieldComWork, "") || string.Equals(fieldRemWork, "") || !string.Equals(fieldTotWork, "") )
         {
             Object[] patchDocument = new Object[3];
             patchDocument[0] = new { op = "add", path = pathRemWork, value = Remwork.ToString("0.##") };
@@ -712,7 +712,7 @@ public static Object[] getChildValuesandPatch(dynamic WorkItemCS, string pathTot
     }
     else if (TotalWork.Count != 0 && RemainingWork.Count == 0 && CompletedWork.Count != 0)
     {
-        if (string.Equals(fieldComWork, "") || string.Equals(fieldTotWork, ""))
+        if (string.Equals(fieldComWork, "") || string.Equals(fieldTotWork, "") || !string.Equals(fieldRemWork, ""))
         {
             Object[] patchDocument = new Object[3];
             patchDocument[0] = new { op = "add", path = pathTotWork, value = TotWork.ToString("0.##") };
@@ -736,7 +736,7 @@ public static Object[] getChildValuesandPatch(dynamic WorkItemCS, string pathTot
     }
     else if (TotalWork.Count != 0 && RemainingWork.Count != 0 && CompletedWork.Count == 0)
     {
-        if (string.Equals(fieldRemWork, "") || string.Equals(fieldTotWork, ""))
+        if (string.Equals(fieldRemWork, "") || string.Equals(fieldTotWork, "") || !string.Equals(fieldComWork, ""))
         {
             Object[] patchDocument = new Object[3];
             patchDocument[0] = new { op = "add", path = pathTotWork, value = TotWork.ToString("0.##") };
@@ -761,7 +761,7 @@ public static Object[] getChildValuesandPatch(dynamic WorkItemCS, string pathTot
     }
     else if (TotalWork.Count == 0 && RemainingWork.Count != 0 && CompletedWork.Count == 0)
     {
-        if (string.Equals(fieldRemWork, ""))
+        if (string.Equals(fieldRemWork, "") || !string.Equals(fieldTotWork, "") || !string.Equals(fieldComWork, ""))
         {
             Object[] patchDocument = new Object[3];
             patchDocument[0] = new { op = "add", path = pathRemWork, value = Remwork.ToString("0.##") };
@@ -788,7 +788,7 @@ public static Object[] getChildValuesandPatch(dynamic WorkItemCS, string pathTot
     }
     else if (TotalWork.Count != 0 && RemainingWork.Count == 0 && CompletedWork.Count == 0)
     {
-        if (string.Equals(fieldTotWork, ""))
+        if (string.Equals(fieldTotWork, "") || !string.Equals(fieldRemWork, "") || !string.Equals(fieldComWork, ""))
         {
             Object[] patchDocument = new Object[3];
             patchDocument[0] = new { op = "add", path = pathTotWork, value = TotWork.ToString("0.##") };
@@ -815,7 +815,7 @@ public static Object[] getChildValuesandPatch(dynamic WorkItemCS, string pathTot
     }
     else if (TotalWork.Count == 0 && RemainingWork.Count == 0 && CompletedWork.Count != 0)
     {
-        if (string.Equals(fieldComWork, ""))
+        if (string.Equals(fieldComWork, "") || !string.Equals(fieldRemWork, "") || !string.Equals(fieldTotWork, ""))
         {
             Object[] patchDocument = new Object[3];
             patchDocument[0] = new { op = "add", path = pathComWork, value = CompWork.ToString("0.##") };
