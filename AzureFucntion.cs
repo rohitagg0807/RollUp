@@ -142,6 +142,7 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
                         var patchDocument = ValidateandPatch(jObject, pathTotWork, pathRemWork, pathComWork, jsonTotWork, jsonRemWork, jsonComWork );
                         if (patchDocument != null)
                         {
+                            log.Info("Inside Patching");
                             var patchValue = new StringContent(JsonConvert.SerializeObject(patchDocument), Encoding.UTF8, "application/json-patch+json"); // mediaType needs to be application/json-patch+json for a patch call
 
                             var methodcall = new HttpMethod("PATCH");
@@ -440,7 +441,7 @@ public static Object[] ValidateandPatch(dynamic jObject, string pathTotWork, str
                 //decimal fieldRemWork = decimal.Parse(fieldTotWork) - decimal.Parse(fieldComWork);
                 patchDocument[0] = new { op = "add", path = pathRemWork, value = fieldTotWork };
                 patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldTotWork };
-                patchDocument[2] = new { op = "add", path = pathComWork, value = "0" };
+                patchDocument[2] = new { op = "add", path = pathComWork, value = "" };
                 return patchDocument;
             }
         }
@@ -452,7 +453,7 @@ public static Object[] ValidateandPatch(dynamic jObject, string pathTotWork, str
             //decimal fieldTotWork = decimal.Parse(fieldComWork) + decimal.Parse(fieldRemWork);
             patchDocument[0] = new { op = "add", path = pathTotWork, value = fieldRemWork };
             patchDocument[1] = new { op = "add", path = pathRemWork, value = fieldRemWork };
-            patchDocument[2] = new { op = "add", path = pathComWork, value = "0" };
+            patchDocument[2] = new { op = "add", path = pathComWork, value = "" };
             return patchDocument;
         }
 
@@ -470,16 +471,20 @@ public static Object[] ValidateandPatch(dynamic jObject, string pathTotWork, str
             }
             else
             {
-            if (Decimal.Compare(decimal.Parse(fieldTotWork), decimal.Parse(fieldRemWork)) >= 0) //Checking if remaining is greater than total
+            if (Decimal.Compare(decimal.Parse(fieldTotWork), decimal.Parse(fieldRemWork)) > 0) //Checking if total is greater than remaining
             {
             decimal fieldComWork = decimal.Parse(fieldTotWork) - decimal.Parse(fieldRemWork);
             patchDocument[0] = new { op = "add", path = pathComWork, value = fieldComWork.ToString("0.##") };
             patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldTotWork };
             patchDocument[2] = new { op = "add", path = pathRemWork, value = fieldRemWork };
             }
+            else if (Decimal.Compare(decimal.Parse(fieldTotWork), decimal.Parse(fieldRemWork)) == 0) //Checking if remaining is equal to total
+            {
+              return null ;
+            }
             else
             {
-            patchDocument[0] = new { op = "add", path = pathComWork, value = "0" };
+            patchDocument[0] = new { op = "add", path = pathComWork, value = "" };
             patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldRemWork };
             patchDocument[2] = new { op = "add", path = pathRemWork, value = fieldRemWork };
             }
@@ -503,7 +508,7 @@ public static Object[] ValidateandPatch(dynamic jObject, string pathTotWork, str
         if (jObject["resource"]["revision"]["fields"][jsonRemWork] == null && jObject["resource"]["revision"]["fields"][jsonTotWork] != null)
         {
             string fieldTotWork = (jObject["resource"]["revision"]["fields"][jsonTotWork]).ToString("0.##");
-           // string fieldComWork = (jObject["resource"]["revision"]["fields"][jsonComWork]).ToString("0.##");
+            //string fieldComWork = (jObject["resource"]["revision"]["fields"][jsonComWork]).ToString("0.##");
             if (jObject["resource"]["revision"]["fields"]["System.State"] != null && (jObject["resource"]["revision"]["fields"]["System.State"]).ToString() == "Done")
             {
                 Object[] patchDocument = new Object[3];
@@ -514,13 +519,15 @@ public static Object[] ValidateandPatch(dynamic jObject, string pathTotWork, str
             }
             else
             {
+
                 Object[] patchDocument = new Object[3];
                // decimal fieldRemWork = decimal.Parse(fieldTotWork) - decimal.Parse(fieldComWork);
                 patchDocument[0] = new { op = "add", path = pathRemWork, value = fieldTotWork };
                 patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldTotWork };
-                patchDocument[2] = new { op = "add", path = pathComWork, value = "0" };
+                patchDocument[2] = new { op = "add", path = pathComWork, value = "" };
                 return patchDocument;
             }
+
         }
 
         else if (jObject["resource"]["revision"]["fields"][jsonRemWork] != null && jObject["resource"]["revision"]["fields"][jsonTotWork] == null)
@@ -531,7 +538,7 @@ public static Object[] ValidateandPatch(dynamic jObject, string pathTotWork, str
             //decimal fieldTotWork = decimal.Parse(fieldComWork) + decimal.Parse(fieldRemWork);
             patchDocument[0] = new { op = "add", path = pathTotWork, value = fieldRemWork };
             patchDocument[1] = new { op = "add", path = pathRemWork, value = fieldRemWork };
-            patchDocument[2] = new { op = "add", path = pathComWork, value = "0" };
+            patchDocument[2] = new { op = "add", path = pathComWork, value = "" };
             return patchDocument;
         }
 
@@ -552,16 +559,20 @@ public static Object[] ValidateandPatch(dynamic jObject, string pathTotWork, str
             {
             if(jObject["resource"]["revision"]["fields"][jsonComWork] == null)
             {
-            if (Decimal.Compare(decimal.Parse(fieldTotWork), decimal.Parse(fieldRemWork)) >= 0)
+            if (Decimal.Compare(decimal.Parse(fieldTotWork), decimal.Parse(fieldRemWork)) > 0)
             {
             decimal fieldComWork = decimal.Parse(fieldTotWork) - decimal.Parse(fieldRemWork);
             patchDocument[0] = new { op = "add", path = pathComWork, value = fieldComWork.ToString("0.##") };
             patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldTotWork };
             patchDocument[2] = new { op = "add", path = pathRemWork, value = fieldRemWork };
             }
+            else if (Decimal.Compare(decimal.Parse(fieldTotWork), decimal.Parse(fieldRemWork)) == 0) //Checking if remaining is equal to total
+            {
+              return null ;
+            }
             else
             {
-            patchDocument[0] = new { op = "add", path = pathComWork, value = "0" };
+            patchDocument[0] = new { op = "add", path = pathComWork, value = "" };
             patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldRemWork };
             patchDocument[2] = new { op = "add", path = pathRemWork, value = fieldRemWork };
             }
@@ -569,12 +580,18 @@ public static Object[] ValidateandPatch(dynamic jObject, string pathTotWork, str
             else
             {
             string fieldTempComWork = (jObject["resource"]["revision"]["fields"][jsonComWork]).ToString("0.##");
-            if (Decimal.Compare(decimal.Parse(fieldTotWork), decimal.Parse(fieldRemWork)) >= 0)
+            if (Decimal.Compare(decimal.Parse(fieldTotWork), decimal.Parse(fieldRemWork)) > 0)
             {
             if(decimal.Parse(fieldTotWork) != decimal.Parse(fieldRemWork) + decimal.Parse(fieldTempComWork))
             {
               decimal fieldComWork = decimal.Parse(fieldTotWork) - decimal.Parse(fieldRemWork);
             patchDocument[0] = new { op = "add", path = pathComWork, value = fieldComWork.ToString("0.##") };
+            patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldTotWork };
+            patchDocument[2] = new { op = "add", path = pathRemWork, value = fieldRemWork };
+            }
+            else if (Decimal.Compare(decimal.Parse(fieldTotWork), decimal.Parse(fieldRemWork)) == 0) //Checking if remaining is equal to total
+            {
+            patchDocument[0] = new { op = "add", path = pathComWork, value = "" };
             patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldTotWork };
             patchDocument[2] = new { op = "add", path = pathRemWork, value = fieldRemWork };
             }
@@ -585,7 +602,7 @@ public static Object[] ValidateandPatch(dynamic jObject, string pathTotWork, str
             }
             else
             {
-            patchDocument[0] = new { op = "add", path = pathComWork, value = "0" };
+            patchDocument[0] = new { op = "add", path = pathComWork, value = "" };
             patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldRemWork };
             patchDocument[2] = new { op = "add", path = pathRemWork, value = fieldRemWork };
             } 
