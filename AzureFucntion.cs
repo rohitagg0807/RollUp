@@ -419,7 +419,7 @@ public static List<string> GetChildItems(dynamic childs)
 
 public static Object[] ValidateandPatch(dynamic jObject, string pathTotWork, string pathRemWork, string pathComWork, string jsonTotWork, string jsonRemWork, string jsonComWork )
 {
-    if ((jObject["eventType"]).ToString() == "workitem.created")
+    if ((jObject["eventType"]).ToString() == "workitem.created") //In Case of Workitem Created (Task) Completed Work is always null
     {
         if (jObject["resource"]["fields"][jsonRemWork] == null && jObject["resource"]["fields"][jsonTotWork] != null)
         {
@@ -550,6 +550,8 @@ public static Object[] ValidateandPatch(dynamic jObject, string pathTotWork, str
             }
             else
             {
+            if(jObject["resource"]["revision"]["fields"][jsonComWork] == null)
+            {
             if (Decimal.Compare(decimal.Parse(fieldTotWork), decimal.Parse(fieldRemWork)) >= 0)
             {
             decimal fieldComWork = decimal.Parse(fieldTotWork) - decimal.Parse(fieldRemWork);
@@ -564,7 +566,32 @@ public static Object[] ValidateandPatch(dynamic jObject, string pathTotWork, str
             patchDocument[2] = new { op = "add", path = pathRemWork, value = fieldRemWork };
             }
             }
+            else
+            {
+            string fieldTempComWork = (jObject["resource"]["revision"]["fields"][jsonComWork]).ToString("0.##");
+            if (Decimal.Compare(decimal.Parse(fieldTotWork), decimal.Parse(fieldRemWork)) >= 0)
+            {
+            if(decimal.Parse(fieldTotWork) != decimal.Parse(fieldRemWork) + decimal.Parse(fieldTempComWork))
+            {
+              decimal fieldComWork = decimal.Parse(fieldTotWork) - decimal.Parse(fieldRemWork);
+            patchDocument[0] = new { op = "add", path = pathComWork, value = fieldComWork.ToString("0.##") };
+            patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldTotWork };
+            patchDocument[2] = new { op = "add", path = pathRemWork, value = fieldRemWork };
+            }
+            else
+            {
+                return null;
+            }
+            }
+            else
+            {
+            patchDocument[0] = new { op = "add", path = pathComWork, value = "0" };
+            patchDocument[1] = new { op = "add", path = pathTotWork, value = fieldRemWork };
+            patchDocument[2] = new { op = "add", path = pathRemWork, value = fieldRemWork };
+            } 
+            }
             return patchDocument;
+        }
         }
          else if (jObject["resource"]["revision"]["fields"][jsonRemWork] == null && jObject["resource"]["revision"]["fields"][jsonTotWork] == null && jObject["resource"]["revision"]["fields"][jsonComWork] != null )
         {
